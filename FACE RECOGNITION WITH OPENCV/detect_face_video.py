@@ -1,34 +1,55 @@
+"""
+Real-Time Face Detection Using OpenCV and Haar Cascade
+
+This script captures video from the webcam and uses OpenCV's Haar Cascade classifier
+to detect and highlight human faces in real-time.
+
+Author: Halfwave Studios
+GitHub: https://github.com/halfwavestudios
+"""
+
 import cv2
 
-# LOAD THE CASCADE
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+# === Load the Haar Cascade Classifier ===
+cascade_path = 'haarcascade_frontalface_default.xml'
+face_cascade = cv2.CascadeClassifier(cascade_path)
 
-# TO CAPTURE THE FACE IN THE WEBCAM/CAMERA 
-cap = cv2.VideoCapture(0)
-# To use a video file as input 
-# cap = cv2.VideoCapture('filename.mp4')
+# === Initialize Webcam Video Capture ===
+cap = cv2.VideoCapture(0)  # Use 0 for default webcam
+# To use a video file instead, replace the line above with:
+# cap = cv2.VideoCapture('your_video_file.mp4')
+
+if not cap.isOpened():
+    raise IOError("[ERROR] Cannot open webcam or video file.")
+
+print("[INFO] Press 'ESC' to exit the application.")
 
 while True:
-    # Read the frame
-    _, img = cap.read()
-
-    # CONVERT THE FACES READ INTO GRAYSCALE
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # DETECT THE GRAYSCALED FACES 
-    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-
-    # DRAW A RECTANGLE AROUND THE DETECTED FACE(S)
-    for (x, y, w, h) in faces:
-        cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
-
-    # DISPLAY THE OUTPUT
-    cv2.imshow('img', img)
-
-    # STOP THE PYTHON SCRIPT WITH ESCAPE KEY
-    k = cv2.waitKey(30) & 0xff
-    if k==27:
+    # === Read a Frame from the Camera ===
+    ret, frame = cap.read()
+    if not ret:
+        print("[WARNING] Failed to grab frame. Exiting.")
         break
-        
-# RELEASE THE VIDEO CAPTURE PROCESS
+
+    # === Convert Frame to Grayscale ===
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # === Detect Faces in the Grayscale Frame ===
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
+
+    # === Draw Bounding Boxes Around Detected Faces ===
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+    # === Display the Frame with Detected Faces ===
+    cv2.imshow('Face Detection - Halfwave Studios', frame)
+
+    # === Exit Loop on ESC Key Press ===
+    key = cv2.waitKey(30) & 0xFF
+    if key == 27:  # ESC key
+        print("[INFO] ESC key pressed. Exiting...")
+        break
+
+# === Release Resources ===
 cap.release()
+cv2.destroyAllWindows()
